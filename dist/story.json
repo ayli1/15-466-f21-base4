@@ -1,17 +1,97 @@
 {
 	"start": {
-		"text": "Hey bestie. Today's a new day, innit.",
-		"choice1": ["Yes it is, bestie!", "good"],
-		"choice2": ["Bullocks to ya", "bad"]
+		"text": "Yes! Orchestra rehearsal after school today! But oh, shoot, I need to run to my locker and grab my calculus textbook...",
+		"choice1": [ "Go get it now.", "locker" ],
+		"choice2": [ "Wait until after rehearsal to get it.", "on_time" ]
+	} ,
+
+	"locker": {
+		"text": "Hrhhgh... just gotta... squeeze through a few more sweaty teens before I can... make it to my locker...\nOh hey, isn't Christina's last class right over there? I bet she's nearby.",
+		"choice1": [ "Find her! You've been itching to see her all day.", "hall_meet" ],
+		"choice2": [ "Get your textbook. You'll see her in a few minutes for rehearsal, anyway.", "on_time" ]
 	},
-	"good": {
-		"text": "What a great start to the day.",
-		"choice1": ["Play again", "start"],
-		"choice2": ["none", "none"]
+
+	"hall_meet": {
+		"text": "Ahh yay! She was right around the corner. She looks so pretty today! And I'm glad I caught her while she was alone -- I love chatting with her just one-on-one.",
+		"choice1": [ "Hold her hand, like you usually do in the halls.", "hate_crime" ],
+		"choice2": [ "Not today... People have been giving us weird looks.", "on_time" ]
 	},
-	"bad": {
-		"text": "Woof, that's brutal",
-		"choice1": ["Play again", "start"],
-		"choice2": ["none", "none"]
+	
+	"hate_crime": {
+		"text": "Oh, great, it's Sam... I-- hey, what?! Why would he just ask if I'm gay in the middle of the hall like that? Not that it matters, because I'm not, but jeez...",
+		"choice1": [ "Brush it off and just get to rehearsal.", "on_time" ],
+		"choice2": [ "Chase Sam down and give him a piece of your mind.", "late" ]
+	},
+	
+	"on_time": {
+		"text": "Great, I still have some time to talk with the homies before rehearsal starts. Looks like Christina's coming over, too!",
+		"choice1": [ "Stand next to Christina in the ring of homies.", "hold_hand" ],
+		"choice2": [ "You've been pretty clingy with Christina lately... Stand next to Mia, instead.", "no_eye_contact" ]
+	},
+
+	"late": {
+		"text": "Alright, it was definitely worth it telling Sam off, but now I'm late to rehearsal... Oh man, I am REALLY late -- I missed my solo in Romeo and Juliet!\nUgh, I was really looking forward to playing that duet with Christina.",
+		"choice1": [ "Offer to stay after rehearsal to run through the duet.", "duet_practice1" ],
+		"choice2": [ "Stay silent so you can get home and nap as soon as rehearsal's done.", "duet_practice2" ]
+	},
+
+	"hold_hand": {
+		"text": "Brrr, the orchestra room is always so cold. Christina's hands are always warm, though... And she usually is kind enough to share her warmth.",
+		"choice1": [ "Hold her hand! It's like a sentient heat pack." , "cold_touch"],
+		"choice2": [ "Go for her hoodie pocket. Much bigger and fleece-lined.", "cold_touch" ]
+	},
+
+	"no_eye_contact": {
+		"text": "Hey, tell Brittany and Christina about how I saw our calculus teacher shopping for mangas at Barnes & Noble. Haha, that was funny--\nWait, huh, looks like Christina missed the story. It kind of feels like she's been ignoring you all week.",
+		"choice1": [ "Talk to her after rehearsal about it.", "cold_talk" ],
+		"choice2": [ "She probably just didn't hear you. Hop over to get her attention and tell her the story again.", "story_retell" ]
+	},
+
+	"story_retell": {
+		"text": "Hrmm... It still doesn't seem like I have her attention. Why won't she make eye contact with me?",
+		"choice1": [ "Give her a gentle touch on the shoulder.", "cold_touch" ],
+		"choice2": [ "It's a little alarming how distant she's been, lately. Talk to her after rehearsal about it.", "cold_talk" ]
+	},
+
+	"cold_touch": {
+		"text": "Whoa, she did not respond well to that. Why did she jerk away? She's typically pretty cuddly...",
+		"choice1": [ "Definitely want to talk to her about this after rehearsal.", "cold_talk" ],
+		"choice2": [ "It can't hurt to just say something now and address it head-on.", "head_on" ]
+	},
+
+	"head_on": {
+		"text": "Oh, man, she is exhausted. No wonder she hasn't been saying much -- she pulled an all-nighter for that calc exam. Sucks that we have to stay even longer after rehearsal to practice our duet in Romeo and Juliet.",
+		"choice1": [ "Offer to drive her home after duet practice.", "car_talk" ],
+		"choice2": [ "Ask Mrs. Carter if you both can skip duet practice.", "duet_practice2" ]
+	},
+
+	"duet_practice1": {
+		"text": "Yeesh, what a long rehearsal -- aaand now for duet practice. Yikes, Christina is about to pass out in the middle of her solo. Good thing we're alone in this practice room, where Mrs. Carter can't bark at us.",
+		"choice1": [ "Let her rest her head on your shoulder.", "duet_talk" ],
+		"choice2": [ "Squeeze her hand and keep her awake.", "duet_talk" ]
+	},
+
+	"duet_practice2": {
+		"text": "Whelp, that didn't pan out... of course Mrs. Carter was going to make us stay after to practice the duet, regardless. To be fair, the concert is fast approaching.\nAt least it's just you and Christina; should still be a fun time.",
+		"choice1": [ "Get to practicin'.", "duet_practice1" ],
+		"choice2": [ "Leave in your car as soon as you head out to 'practice'. Mrs. Carter never checks on you, anyway.", "car_talk" ]
+	},
+
+	"cold_talk": {
+		"text": "Turns out she was being distant because the last week has been rough with schoolwork and SAT prep. I'm so relieved it's not that she was ignoring me... I don't know how I'd live without her in my day-to-day life.",
+		"choice1": [ "Do it all again at next week's rehearsal.", "start" ],
+		"choice2": [ "none", "none" ]
+	},
+
+	"car_talk": {
+		"text": "Haha, she zonked out as soon as I drove out of the parking lot. It's so good to see her getting some rest. She's somehow so beautiful when she sleeps... Oh, whoops, I should probably watch the road.",
+		"choice1": [ "Do it all again at next week's rehearsal.", "start" ],
+		"choice2": [ "none", "none" ]
+	},
+
+	"duet_talk": {
+		"text": "There's always something so exhilarating about coming into contact with Christina. She's soft and seems to radiate warmth. I wait all day for little moments like this. Can't wait for the next duet practice.",
+		"choice1": [ "Do it all again at next week's rehearsal.", "start" ],
+		"choice2": [ "none", "none" ]
 	}
 }

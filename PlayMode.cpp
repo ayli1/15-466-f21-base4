@@ -486,10 +486,9 @@ void PlayMode::draw_text(std::string text, float x, float y, float scale) {
 		// Advance cursors for next glyph (advance is number of 1/64 pixels)
 		x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
 
-		// New line if this is a space, comma, or period and your cup overfloweth,
+		// New line if this is a space and your cup overfloweth,
 		// OR if it's just a newline char lol
-		if ((x > 400.0f && ((cp == 32) || (cp == 44) || (cp == 46))) ||
-			(cp == 0)) {
+		if ((x > 900.0f && (cp == 3)) || (cp == 0)) {
 			y -= 50.0f * scale;
 			x = x_start;
 		}

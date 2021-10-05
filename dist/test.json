@@ -1,0 +1,17 @@
+{
+	"start": {
+		"text": "Hey bestie. Today's a new day, innit.",
+		"choice1": ["Yes it is, bestie!", "good"],
+		"choice2": ["Bullocks to ya", "bad"]
+	},
+	"good": {
+		"text": "What a great start to the day.",
+		"choice1": ["Play again", "start"],
+		"choice2": ["none", "none"]
+	},
+	"bad": {
+		"text": "Woof, that's brutal",
+		"choice1": ["Play again", "start"],
+		"choice2": ["none", "none"]
+	}
+}
