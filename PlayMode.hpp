@@ -5,8 +5,15 @@
 
 #include <glm/glm.hpp>
 
+#include <hb.h>
+#include <hb-ft.h>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <vector>
 #include <deque>
+#include <map>
 
 struct PlayMode : Mode {
 	PlayMode();
@@ -28,6 +35,7 @@ struct PlayMode : Mode {
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 
+	/*
 	//hexapod leg to wobble:
 	Scene::Transform *hip = nullptr;
 	Scene::Transform *upper_leg = nullptr;
@@ -41,8 +49,30 @@ struct PlayMode : Mode {
 
 	//music coming from the tip of the leg (as a demonstration):
 	std::shared_ptr< Sound::PlayingSample > leg_tip_loop;
-	
+	*/
+
 	//camera:
 	Scene::Camera *camera = nullptr;
 
+	// Referenced: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
+	hb_font_t *hb_font;
+	hb_buffer_t *hb_buffer;
+
+	// Referenced: https://learnopengl.com/In-Practice/Text-Rendering
+	FT_Library ft_lib;  // FreeType library into which we will load our font
+	FT_Face    ft_face; // Loading font into ft as a face
+	std::string font_file = "VT323-Regular.ttf";
+
+	struct Character {
+		unsigned int TextureID; // ID handle of glyph texture
+		glm::ivec2   Size;      // Size of glyph
+		glm::ivec2   Bearing;   // Offset from baseline to top left of glyph
+		unsigned int Advance;   // Offset to advance to next glyph
+	};
+
+	std::map< FT_UInt, Character > Chars;
+
+	GLuint VBO, VAO; // Vertex buffer object & vertex array object
+
+	glm::vec3 text_color = glm::vec3(158.0, 219.0, 174.0);
 };
