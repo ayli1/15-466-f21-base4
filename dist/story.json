@@ -9,7 +9,7 @@
 		"choice1": ["Play again", "start"],
 		"choice2": ["none", "none"]
 	},
-	"end": {
+	"bad": {
 		"text": "Woof, that's brutal",
 		"choice1": ["Play again", "start"],
 		"choice2": ["none", "none"]

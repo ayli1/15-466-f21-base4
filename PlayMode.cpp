@@ -157,6 +157,17 @@ PlayMode::~PlayMode() {
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 
 	if (evt.type == SDL_KEYDOWN) {
+		if ((evt.key.keysym.sym == SDLK_1) && !one.pressed) {
+			one.downs += 1;
+			one.pressed = true;
+			return true;
+		}
+		else if ((evt.key.keysym.sym == SDLK_2) && !two.pressed) {
+			two.downs += 1;
+			two.pressed = true;
+			return true;
+		}
+		/*
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
 			return true;
@@ -176,8 +187,23 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.downs += 1;
 			down.pressed = true;
 			return true;
-		}
+		}*/
 	} else if (evt.type == SDL_KEYUP) {
+		if (evt.key.keysym.sym == SDLK_1) {
+			one.pressed = false;
+			if (json[curr_state]["choice1"][0] != "none") {
+				curr_state = json[curr_state]["choice1"][1];
+			}
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_2) {
+			two.pressed = false;
+			if (json[curr_state]["choice2"][0] != "none") {
+				curr_state = json[curr_state]["choice2"][1];
+			}
+			return true;
+		}
+		/*
 		if (evt.key.keysym.sym == SDLK_a) {
 			left.pressed = false;
 			return true;
@@ -190,7 +216,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_s) {
 			down.pressed = false;
 			return true;
-		}
+		}*/
 	} 
 	/*else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
@@ -268,11 +294,20 @@ void PlayMode::update(float elapsed) {
 	}
 	*/
 
+	// Update current state based on what the user chooses (so long as that choice exists)
+	//if (one.pressed && (json[curr_state]["choice1"][0] != "none")) {
+	//	curr_state = json[curr_state]["choice1"][1];
+	//} else if (two.pressed && (json[curr_state]["choice2"][0] != "none")) {
+	//	curr_state = json[curr_state]["choice2"][1];
+	//}
+
 	//reset button press counters:
-	left.downs = 0;
-	right.downs = 0;
-	up.downs = 0;
-	down.downs = 0;
+	one.downs = 0;
+	two.downs = 0;
+	//left.downs = 0;
+	//right.downs = 0;
+	//up.downs = 0;
+	//down.downs = 0;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
