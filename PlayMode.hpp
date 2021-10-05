@@ -3,6 +3,9 @@
 #include "Scene.hpp"
 #include "Sound.hpp"
 
+#include "json.hpp"
+using JSON = nlohmann::json;
+
 #include <glm/glm.hpp>
 
 #include <hb.h>
@@ -74,5 +77,15 @@ struct PlayMode : Mode {
 
 	GLuint VBO, VAO; // Vertex buffer object & vertex array object
 
-	glm::vec3 text_color = glm::vec3(158.0, 219.0, 174.0);
+	// RGB text color, each value in range of 0 to 1
+	glm::vec3 text_color = glm::vec3(179.0f/256.0f, 207.0f/256.0f, 120.0f/256.0f);
+
+	void draw_text(std::string text, float x, float y, float scale);
+
+	float x_start = 50.0f;
+	float y_prompt_start = 650.0f;
+	float y_choice_start = 300.0f;
+
+	JSON json;
+	std::string curr_state;
 };

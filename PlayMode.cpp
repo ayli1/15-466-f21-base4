@@ -12,6 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+#include <fstream>
 
 #define FONT_SIZE 36
 #define MARGIN (FONT_SIZE * .5)
@@ -71,7 +72,22 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
 	*/
 
-	// TODO: read in story text with read_chunk
+	// Read from JSON file
+	// Referenced:
+	// 	 https://github.com/nlohmann/json#examples
+	//   Tyler Thompson and Pavan Paravasthu's S20 game4: https://github.com/friskydingo0/15-466-f20-base4/blob/master/TextMode.cpp
+	try {
+		std::ifstream in("dist/story.json");
+		in >> json;
+	}
+	catch (int e) {
+		std::cout << "A JSON exception occurred: #" << e << std::endl;
+	}
+
+	//std::string json_txt = json["start"]["text"];
+	//std::cout << "json_txt: " << json_txt << std::endl;
+
+	curr_state = "start"; // First state upon beginning
 
 	// The following font handling referenced from:
 	//   https://learnopengl.com/In-Practice/Text-Rendering
@@ -104,12 +120,14 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 
 	// Create hb buffer
 	hb_buffer = hb_buffer_create();
-	// TODO: get rid of the next few lines; you shouldn't be populating the buffer
-	// or shaping yet!!
-	std::string sample_txt = "heyyy bestie";
-	hb_buffer_add_utf8(hb_buffer, sample_txt.c_str(), -1, 0, 12); // Reference for conversion from string to const char *: https://stackoverflow.com/questions/68339345/how-to-convert-string-to-const-char-in-c
+
+	/*
+	std::string sample_txt = "heyyy bestie\nwhat's good, b";
+	// TODO: make sure to change last arg (-1) to length of string
+	hb_buffer_add_utf8(hb_buffer, sample_txt.c_str(), -1, 0, -1); // Reference for conversion from string to const char *: https://stackoverflow.com/questions/68339345/how-to-convert-string-to-const-char-in-c
 	hb_buffer_guess_segment_properties(hb_buffer);
 	hb_shape(hb_font, hb_buffer, NULL, 0);
+	*/
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -265,7 +283,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	// TODO: consider using the Light(s) in the scene to do this
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
-	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, -1.0f)));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 	glUseProgram(0);
 
@@ -303,118 +321,147 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	}
 	*/
 
+	//float x = x_start;
+	//float y = y_start;
+	float scale = 1.0f;
+
 	// Render text
-	// Referenced:
-	//   https://learnopengl.com/In-Practice/Text-Rendering
-	//   Alyssa Lee and Madeline Anthony's F20 game4: https://github.com/lassyla/game4/blob/master/PlayMode.cpp
-	{
-		float left_margin = 100.0f;
-		float x           = 100.0f;
-		float y           = 100.0f;
-		float scale       = 1.0f;
+	// Prompt
+	draw_text(json[curr_state]["text"], x_start, y_prompt_start, 1.2f);
 
-		glDisable(GL_DEPTH_TEST);
+	// Choice 1 (if it exists)
+	if (json[curr_state]["choice1"][0] != "none") {
+		std::string choice_txt = "1. " + (std::string)(json[curr_state]["choice1"][0]);
+		draw_text(choice_txt, x_start, y_choice_start, scale);
+	}
 
-		// Activate corresponding render state
-		glUseProgram(color_texture_program->program);
-		glUniform3f(color_texture_program->Color_vec3, text_color.x, text_color.y, text_color.z);
-		glm::mat4 projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f); // Window dimensions yoinked from main
-		glUniformMatrix4fv(color_texture_program->OBJECT_TO_CLIP_mat4, 1, GL_FALSE, &projection[0][0]);
-		glActiveTexture(GL_TEXTURE0);
-		glBindVertexArray(VAO);
-
-		// Get glyph info from buffer
-		unsigned int num_glyphs;
-		hb_glyph_info_t *glynfo = hb_buffer_get_glyph_infos(hb_buffer, &num_glyphs);
-
-		// Generate a texture for each glyph we encounter in the buffer, unless it's
-		// already been loaded
-		for (unsigned int i = 0; i < num_glyphs; i++) {
-			FT_UInt cp = (FT_UInt)glynfo[i].codepoint; // TODO: type stuff ??
-
-			// If not in Chars map yet, load this glyph and add to Chars
-			if (Chars.count(cp) == 0) {
-				// Load char glyph
-				if (FT_Load_Glyph(ft_face, cp, FT_LOAD_RENDER)) {
-					throw std::runtime_error("Failed to load glyph");
-					continue;
-				}
-
-				// Generate texture
-				unsigned int texture;
-				glGenTextures(1, &texture);
-				glBindTexture(GL_TEXTURE_2D, texture);
-				glTexImage2D(
-					GL_TEXTURE_2D,
-					0, GL_RED,
-					ft_face->glyph->bitmap.width,
-					ft_face->glyph->bitmap.rows,
-					0,
-					GL_RED,
-					GL_UNSIGNED_BYTE,
-					ft_face->glyph->bitmap.buffer
-				);
-
-				// Set texture options
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-				// Store character for later use
-				Character character = {
-					texture,
-					glm::ivec2(ft_face->glyph->bitmap.width, ft_face->glyph->bitmap.rows),
-					glm::ivec2(ft_face->glyph->bitmap_left,  ft_face->glyph->bitmap_top),
-					(unsigned int)(ft_face->glyph->advance.x)
-				};
-				Chars.insert(std::pair<FT_UInt, Character>(cp, character));
-			}
-
-			// Update VBO for each character
-			Character ch = Chars[cp];
-			
-			float xpos = x + ch.Bearing.x * scale;
-			float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
-			float w = ch.Size.x * scale;
-			float h = ch.Size.y * scale;
-
-			float vertices[6][4] = {
-				{ xpos,     ypos + h, 0.0f, 0.0f },
-				{ xpos,     ypos,     0.0f, 1.0f },
-				{ xpos + w, ypos,     1.0f, 1.0f },
-
-				{ xpos,     ypos + h, 0.0f, 0.0f },
-				{ xpos + w, ypos,     1.0f, 1.0f },
-				{ xpos + w, ypos + h, 1.0f, 0.0f }
-			};
-
-			// Render glyph texture over quad
-			glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-
-			// Update content of VBO memory
-			glBindBuffer(GL_ARRAY_BUFFER, VBO);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			// Render quad
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// Advance cursors for next glyph (advance is number of 1/64 pixels)
-			x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
-			
-			// New line if this is a space, comma, or period and your cup overfloweth
-			if (x > 400.0f && ((cp == 32) || (cp == 44) || (cp == 46))) {
-				y -= 50.0f * scale;
-				x = left_margin;
-			}
-		}
-
-		glBindVertexArray(0);
-		glBindTexture(GL_TEXTURE_2D, 0);
+	// Choice 2 (if it exists)
+	if (json[curr_state]["choice2"][0] != "none") {
+		std::string choice_txt = "2. " + (std::string)(json[curr_state]["choice2"][0]);
+		draw_text(choice_txt, x_start, y_choice_start - (60.0f * scale), scale);
 	}
 
 	GL_ERRORS();
+}
+
+// Referenced:
+//   https://learnopengl.com/In-Practice/Text-Rendering
+//   Alyssa Lee and Madeline Anthony's F20 game4: https://github.com/lassyla/game4/blob/master/PlayMode.cpp
+void PlayMode::draw_text(std::string text, float x, float y, float scale) {
+	//float left_margin = 50.0f;
+	//float x = 50.0f;
+	//float y = 650.0f;
+	//float scale = 1.0f;
+
+	hb_buffer_clear_contents(hb_buffer);
+	hb_buffer_add_utf8(hb_buffer, text.c_str(), -1, 0, -1); // Reference for conversion from string to const char *: https://stackoverflow.com/questions/68339345/how-to-convert-string-to-const-char-in-c
+	hb_buffer_set_direction(hb_buffer, HB_DIRECTION_LTR);
+	hb_buffer_set_script(hb_buffer, HB_SCRIPT_LATIN);
+	hb_buffer_set_language(hb_buffer, hb_language_from_string("en", -1));
+	hb_shape(hb_font, hb_buffer, NULL, 0);
+
+	glDisable(GL_DEPTH_TEST);
+
+	// Activate corresponding render state
+	glUseProgram(color_texture_program->program);
+	glUniform3f(color_texture_program->Color_vec3, text_color.x, text_color.y, text_color.z);
+	glm::mat4 projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f); // Window dimensions yoinked from main
+	glUniformMatrix4fv(color_texture_program->OBJECT_TO_CLIP_mat4, 1, GL_FALSE, &projection[0][0]);
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(VAO);
+
+	// Get glyph info from buffer
+	unsigned int num_glyphs;
+	hb_glyph_info_t *glynfo = hb_buffer_get_glyph_infos(hb_buffer, &num_glyphs);
+
+	// Generate a texture for each glyph we encounter in the buffer, unless it's
+	// already been loaded
+	for (unsigned int i = 0; i < num_glyphs; i++) {
+		FT_UInt cp = (FT_UInt)glynfo[i].codepoint; // TODO: type stuff ??
+
+		// If not in Chars map yet, load this glyph and add to Chars
+		if (Chars.count(cp) == 0) {
+			//std::cout << "codepoint: " << cp << std::endl;
+			// Load char glyph
+			if (FT_Load_Glyph(ft_face, cp, FT_LOAD_RENDER)) {
+				throw std::runtime_error("Failed to load glyph");
+				continue;
+			}
+
+			// Generate texture
+			unsigned int texture;
+			glGenTextures(1, &texture);
+			glBindTexture(GL_TEXTURE_2D, texture);
+			glTexImage2D(
+				GL_TEXTURE_2D,
+				0, GL_RED,
+				ft_face->glyph->bitmap.width,
+				ft_face->glyph->bitmap.rows,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				ft_face->glyph->bitmap.buffer
+			);
+
+			// Set texture options
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			// Store character for later use
+			Character character = {
+				texture,
+				glm::ivec2(ft_face->glyph->bitmap.width, ft_face->glyph->bitmap.rows),
+				glm::ivec2(ft_face->glyph->bitmap_left,  ft_face->glyph->bitmap_top),
+				(unsigned int)(ft_face->glyph->advance.x)
+			};
+			Chars.insert(std::pair<FT_UInt, Character>(cp, character));
+		}
+
+		// Update VBO for each character
+		Character ch = Chars[cp];
+
+		float xpos = x + ch.Bearing.x * scale;
+		float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+		float w = ch.Size.x * scale;
+		float h = ch.Size.y * scale;
+
+		float vertices[6][4] = {
+			{ xpos,     ypos + h, 0.0f, 0.0f },
+			{ xpos,     ypos,     0.0f, 1.0f },
+			{ xpos + w, ypos,     1.0f, 1.0f },
+
+			{ xpos,     ypos + h, 0.0f, 0.0f },
+			{ xpos + w, ypos,     1.0f, 1.0f },
+			{ xpos + w, ypos + h, 1.0f, 0.0f }
+		};
+
+		// Render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+		// Update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// Render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// Advance cursors for next glyph (advance is number of 1/64 pixels)
+		x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+
+		// New line if this is a space, comma, or period and your cup overfloweth,
+		// OR if it's just a newline char lol
+		if ((x > 400.0f && ((cp == 32) || (cp == 44) || (cp == 46))) ||
+			(cp == 0)) {
+			y -= 50.0f * scale;
+			x = x_start;
+		}
+	}
+
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 /*
